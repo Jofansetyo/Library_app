@@ -1,30 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Borrower</title>
-</head>
-<body>
-    <h1>Edit Borrower</h1>
-    <form action="{{ route('borrowers.update', $borrower->id) }}" method="POST">
+@extends('layouts.app')
+
+@section('title', 'Ubah Anggota')
+
+@section('content')
+    <p class="eyebrow">Kenalan dengan pembaca</p>
+    <h1>Ubah detail anggota</h1>
+    <p class="page-intro">Perbarui informasi anggota perpustakaan.</p>
+
+    <form class="form-card" action="{{ route('borrowers.update', $borrower->id) }}" method="POST">
         @csrf
         @method('PUT')
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="{{ $borrower->name }}">
-        </div>
-        <div>
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" value="{{ $borrower->email }}">
-        </div>
-        <div>
-            <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone" value="{{ $borrower->phone }}">
-        </div>
-        <div>
-            <button type="submit">Update</button>
+        <div class="form-grid">
+            <div class="field">
+                <label for="name">Nama lengkap</label>
+                <input type="text" id="name" name="name" value="{{ old('name', $borrower->name) }}" required>
+            </div>
+            <div class="field">
+                <label for="email">Alamat email</label>
+                <input type="email" id="email" name="email" value="{{ old('email', $borrower->email) }}" required>
+            </div>
+            <div class="field">
+                <label for="phone">Nomor telepon</label>
+                <input type="tel" id="phone" name="phone" value="{{ old('phone', $borrower->phone) }}" required>
+            </div>
+            <div class="form-actions">
+                <button class="button button-primary" type="submit">Simpan perubahan</button>
+                <a class="button button-secondary" href="{{ route('borrowers.index') }}">Batal</a>
+            </div>
         </div>
     </form>
-</body>
-</html>
+@endsection

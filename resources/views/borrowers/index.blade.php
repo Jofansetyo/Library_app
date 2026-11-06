@@ -1,39 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Borrower List</title>
-</head>
-<body>
-    <h1>Borrower List</h1>
-    <a href="{{ route('borrowers.create') }}">Add New Borrower</a>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($borrowers as $borrower)
-            <tr>
-                <td>{{ $borrower->name }}</td>
-                <td>{{ $borrower->email }}</td>
-                <td>{{ $borrower->phone }}</td>
-                <td>
-                    <a href="{{ route('borrowers.edit', $borrower->id) }}">Edit</a>
-                    <form action="{{ route('borrowers.destroy', $borrower->id) }}" method="POST" style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</body>
-</html>
+@extends('layouts.app')
+
+@section('title', 'Anggota')
+
+@section('content')
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">Komunitas pembaca</p>
+            <h1>Anggota</h1>
+            <p class="page-intro">Orang-orang yang membawa cerita pulang.</p>
+        </div>
+        <a class="button button-primary" href="{{ route('borrowers.create') }}">+ Tambah anggota</a>
+    </div>
+
+    <div class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr><th>Nama</th><th>Email</th><th>Telepon</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                    @forelse ($borrowers as $borrower)
+                        <tr>
+                            <td>{{ $borrower->name }}</td>
+                            <td>{{ $borrower->email }}</td>
+                            <td>{{ $borrower->phone }}</td>
+                            <td>
+                                <div class="actions">
+                                    <a class="text-link" href="{{ route('borrowers.edit', $borrower->id) }}">Ubah</a>
+                                    <form action="{{ route('borrowers.destroy', $borrower->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="delete-button" type="submit">Hapus</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4">Belum ada anggota yang terdaftar.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection

@@ -1,29 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Borrower</title>
-</head>
-<body>
-    <h1>Add New Borrower</h1>
-    <form action="{{ route('borrowers.store') }}" method="POST">
+@extends('layouts.app')
+
+@section('title', 'Tambah Anggota')
+
+@section('content')
+    <p class="eyebrow">Kenalan dengan pembaca</p>
+    <h1>Tambahkan anggota</h1>
+    <p class="page-intro">Simpan informasi anggota perpustakaan.</p>
+
+    <form class="form-card" action="{{ route('borrowers.store') }}" method="POST">
         @csrf
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="">
-        </div>
-        <div>
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" value="">
-        </div>
-        <div>
-            <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone" value="">
-        </div>
-        <div>
-            <button type="submit">Add</button>
+        <div class="form-grid">
+            <div class="field">
+                <label for="name">Nama lengkap</label>
+                <input type="text" id="name" name="name" value="{{ old('name') }}" required>
+            </div>
+            <div class="field">
+                <label for="email">Alamat email</label>
+                <input type="email" id="email" name="email" value="{{ old('email') }}" required>
+            </div>
+            <div class="field">
+                <label for="phone">Nomor telepon</label>
+                <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" required>
+            </div>
+            <div class="form-actions">
+                <button class="button button-primary" type="submit">Simpan anggota</button>
+                <a class="button button-secondary" href="{{ route('borrowers.index') }}">Batal</a>
+            </div>
         </div>
     </form>
-</body>
-</html>
+@endsection

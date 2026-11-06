@@ -1,30 +1,31 @@
-<!-- resources/views/books/create.blade.php -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Book</title>
-</head>
-<body>
-    <h1>Add New Book</h1>
-    <form action="{{ route('books.store') }}" method="POST">
+@extends('layouts.app')
+
+@section('title', 'Tambah Buku')
+
+@section('content')
+    <p class="eyebrow">Perbarui rak bacaan</p>
+    <h1>Tambahkan buku</h1>
+    <p class="page-intro">Catat cerita baru agar mudah ditemukan nanti.</p>
+
+    <form class="form-card" action="{{ route('books.store') }}" method="POST">
         @csrf
-        <div>
-            <label for="title">Title:</label>
-            <input type="text" id="title" name="title" value="">
-        </div>
-        <div>
-            <label for="author">Author:</label>
-            <input type="text" id="author" name="author" value="">
-        </div>
-        <div>
-            <label for="year">Year:</label>
-            <input type="text" id="year" name="year" value="">
-        </div>
-        <div>
-            <button type="submit">Add</button>
+        <div class="form-grid">
+            <div class="field">
+                <label for="title">Judul buku</label>
+                <input type="text" id="title" name="title" value="{{ old('title') }}" required>
+            </div>
+            <div class="field">
+                <label for="author">Penulis</label>
+                <input type="text" id="author" name="author" value="{{ old('author') }}" required>
+            </div>
+            <div class="field">
+                <label for="year">Tahun terbit</label>
+                <input type="number" id="year" name="year" value="{{ old('year') }}" required>
+            </div>
+            <div class="form-actions">
+                <button class="button button-primary" type="submit">Simpan buku</button>
+                <a class="button button-secondary" href="{{ route('books.index') }}">Batal</a>
+            </div>
         </div>
     </form>
-</body>
-</html>
+@endsection
