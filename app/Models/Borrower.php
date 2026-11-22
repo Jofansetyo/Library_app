@@ -14,12 +14,13 @@ class Borrower extends Model
 
     protected $fillable = [
         'name',
-        'email',
         'phone',
+        'address',
     ];
+
     // relasi One to Many dengan Borrowing
-public function borrowings()
-{
-    return $this->hasMany('App\Models\Borrowing');
-}
+    public function borrowings()
+    {
+        return $this->hasMany(Borrowing::class);
+    }
 }

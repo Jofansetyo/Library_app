@@ -6,17 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('borrowers', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->string('email', 100);
-            $table->string('phone', 20);
+            $table->string('name', 150);
+            $table->string('phone', 20)->nullable();
+            $table->string('address', 250)->nullable();
             $table->timestamps();
         });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('borrowers');
     }
 };

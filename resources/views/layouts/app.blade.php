@@ -1,161 +1,172 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Ruang Baca') · Ruang Baca</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Perpustakaan Digital') - Sistem Manajemen Perpustakaan</title>
+
+    <!-- Google Fonts: Lexend (Heading) & Plus Jakarta Sans (Body/Data) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
-        :root {
-            color-scheme: light;
-            --ink: #20342d;
-            --muted: #75827a;
-            --paper: #f7f6f0;
-            --white: #fffefa;
-            --green: #214f3c;
-            --green-dark: #183c2d;
-            --lime: #d7ed9f;
-            --line: #e6e8df;
-            --gold: #d7a956;
-            font-family: "DM Sans", sans-serif;
-            color: var(--ink);
-            background: var(--paper);
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; min-width: 320px; background: var(--paper); }
-        a { color: inherit; text-decoration: none; }
-        button, input, select { font: inherit; }
-        .site-header { position: sticky; top: 0; z-index: 5; border-bottom: 1px solid rgba(32, 52, 45, .08); background: rgba(255, 254, 250, .92); backdrop-filter: blur(16px); }
-        .nav-wrap { width: min(1120px, calc(100% - 48px)); min-height: 76px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-        .brand { display: flex; align-items: center; gap: 11px; font-weight: 700; letter-spacing: -.04em; font-size: 19px; }
-        .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; color: var(--lime); background: var(--green); font-size: 18px; }
-        .nav-links { display: flex; align-items: center; gap: 7px; }
-        .nav-link { padding: 10px 14px; border-radius: 999px; color: #647168; font-size: 13px; font-weight: 600; transition: .2s ease; }
-        .nav-link:hover, .nav-link.active { color: var(--green); background: #edf2e8; }
-        .nav-cta { padding: 11px 17px; border-radius: 999px; color: white; background: var(--green); font-size: 13px; font-weight: 700; transition: .2s ease; }
-        .nav-cta:hover, .button-primary:hover { background: var(--green-dark); transform: translateY(-1px); }
-        .page-wrap { width: min(1120px, calc(100% - 48px)); margin: 0 auto; padding: 52px 0 76px; min-height: calc(100vh - 150px); }
-        .eyebrow { margin: 0 0 12px; color: #7d8d69; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-        h1, h2, h3, p { margin-top: 0; }
-        h1, .serif { font-family: "Playfair Display", Georgia, serif; }
-        h1 { margin-bottom: 10px; font-size: clamp(32px, 5vw, 46px); letter-spacing: -.045em; line-height: 1.12; }
-        .page-intro { margin-bottom: 28px; color: var(--muted); font-size: 15px; }
-        .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 28px; }
-        .button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 700; transition: .2s ease; }
-        .button-primary { color: white; background: var(--green); }
-        .button-secondary { color: var(--green); background: #edf2e8; }
-        .button-secondary:hover { background: #e1ead9; }
-        .table-card, .form-card { overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--white); box-shadow: 0 10px 32px rgba(32, 52, 45, .04); }
-        .table-scroll { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 16px 21px; color: #879188; background: #fafbf7; font-size: 10px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; white-space: nowrap; }
-        td { padding: 18px 21px; border-top: 1px solid #eef0e9; color: #59675e; font-size: 13px; }
-        td:first-child { color: var(--ink); font-weight: 700; }
-        tbody tr { transition: background .2s ease; }
-        tbody tr:hover { background: #fbfcf8; }
-        .actions { display: flex; align-items: center; gap: 13px; white-space: nowrap; }
-        .text-link { color: var(--green); font-size: 12px; font-weight: 700; }
-        .text-link:hover { text-decoration: underline; }
-        .delete-button { padding: 0; border: 0; color: #b25d4a; background: none; cursor: pointer; font-size: 12px; font-weight: 700; }
-        .delete-button:hover { text-decoration: underline; }
-        .form-card { max-width: 650px; padding: 30px; }
-        .form-grid { display: grid; gap: 20px; }
-        .field { display: grid; gap: 8px; }
-        .field label { color: #526157; font-size: 12px; font-weight: 700; }
-        .field input, .field select { width: 100%; height: 48px; padding: 0 14px; border: 1px solid #e1e5db; border-radius: 11px; outline: none; color: var(--ink); background: #fff; transition: border-color .2s, box-shadow .2s; }
-        .field input:focus, .field select:focus { border-color: #80a587; box-shadow: 0 0 0 4px rgba(81, 127, 91, .1); }
-        .form-actions { display: flex; gap: 10px; margin-top: 8px; }
-        .error-list { margin: 0 0 22px; padding: 15px 20px; border: 1px solid #f1c9bd; border-radius: 12px; color: #994d3c; background: #fff5f1; font-size: 13px; }
-        .site-footer { padding: 22px 24px; border-top: 1px solid rgba(32, 52, 45, .08); color: #849087; text-align: center; font-size: 11px; }
-        .hero { position: relative; display: grid; min-height: 420px; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 36px; overflow: hidden; padding: clamp(28px, 6vw, 66px); border-radius: 28px; color: white; background: var(--green); }
-        .hero:before { position: absolute; top: -170px; right: -120px; width: 470px; height: 470px; border: 1px solid rgba(255,255,255,.1); border-radius: 50%; content: ""; }
-        .hero-copy { position: relative; z-index: 1; }
-        .hero .eyebrow { color: var(--lime); }
-        .hero h1 { max-width: 570px; margin-bottom: 18px; font-size: clamp(40px, 6vw, 66px); }
-        .hero h1 span { color: var(--lime); }
-        .hero-copy > p:not(.eyebrow) { max-width: 440px; margin-bottom: 26px; color: rgba(255,255,255,.72); font-size: 15px; line-height: 1.8; }
-        .hero .button-primary { color: var(--green-dark); background: var(--lime); }
-        .hero .button-primary:hover { background: #e5f6be; }
-        .hero-art { position: relative; display: grid; min-height: 290px; place-items: center; }
-        .art-orbit { position: absolute; width: 280px; height: 280px; border: 1px solid rgba(215,237,159,.28); border-radius: 50%; }
-        .art-orbit:before, .art-orbit:after { position: absolute; border: 1px solid rgba(215,237,159,.18); border-radius: 50%; content: ""; }
-        .art-orbit:before { inset: 20px; }
-        .art-orbit:after { inset: 42px; }
-        .book-stack { position: relative; width: 245px; height: 205px; transform: rotate(-7deg); }
-        .book { position: absolute; width: 175px; height: 48px; border: 1px solid rgba(255,255,255,.15); border-radius: 6px 12px 12px 6px; box-shadow: 0 15px 26px rgba(8,28,20,.22); }
-        .book:after { position: absolute; top: 10px; bottom: 10px; left: 16px; width: 2px; background: rgba(255,255,255,.35); content: ""; }
-        .book-one { right: 12px; bottom: 23px; background: #d5a657; transform: rotate(7deg); }
-        .book-two { bottom: 72px; left: 2px; background: #8caa75; transform: rotate(-6deg); }
-        .book-three { top: 18px; right: 0; background: #d78360; transform: rotate(8deg); }
-        .sun { position: absolute; top: 12px; right: 24px; width: 31px; height: 31px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 42px rgba(215,237,159,.35); }
-        .spark { position: absolute; color: var(--lime); font-size: 25px; }
-        .spark-a { top: 48px; left: 7px; }
-        .spark-b { right: 10px; bottom: 35px; font-size: 16px; }
-        .section-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin: 54px 0 20px; }
-        .section-head h2 { margin: 0; font-family: "Playfair Display", Georgia, serif; font-size: 27px; letter-spacing: -.03em; }
-        .section-head p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-        .collection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .collection-card { display: flex; min-height: 170px; flex-direction: column; justify-content: space-between; padding: 23px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); transition: transform .2s, box-shadow .2s; }
-        .collection-card:hover { transform: translateY(-4px); box-shadow: 0 15px 32px rgba(32, 52, 45, .08); }
-        .collection-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 13px; color: var(--green); background: #edf2e8; font-size: 19px; }
-        .collection-card h3 { margin: 17px 0 5px; font-family: "Playfair Display", Georgia, serif; font-size: 19px; }
-        .collection-card p { margin: 0; color: var(--muted); font-size: 12px; }
-        .collection-arrow { align-self: end; color: var(--green); font-size: 20px; }
-        .note-band { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 18px; padding: 21px 24px; border-radius: 16px; background: #ecefdf; }
-        .note-band strong { font-family: "Playfair Display", Georgia, serif; font-size: 18px; }
-        .note-band span { color: #657365; font-size: 12px; }
-        @media (max-width: 720px) {
-            .nav-wrap, .page-wrap { width: min(100% - 32px, 560px); }
-            .nav-wrap { min-height: 68px; gap: 8px; }
-            .nav-links { gap: 0; }
-            .nav-link { padding: 9px 10px; font-size: 11px; }
-            .nav-cta { display: none; }
-            .page-wrap { padding-top: 36px; }
-            .hero { grid-template-columns: 1fr; gap: 6px; padding: 34px 26px 18px; }
-            .hero-art { min-height: 220px; }
-            .art-orbit { width: 220px; height: 220px; }
-            .book-stack { transform: scale(.85) rotate(-7deg); }
-            .collection-grid { grid-template-columns: 1fr; }
-            .collection-card { min-height: 145px; }
-            .page-heading { align-items: start; flex-direction: column; }
-            .form-card { padding: 22px; }
-            th, td { padding: 15px; }
-            .section-head { margin-top: 40px; }
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+            letter-spacing: -0.02em;
         }
-        @media (max-width: 390px) { .brand { font-size: 16px; } .nav-link { padding-inline: 7px; font-size: 10px; } }
     </style>
 </head>
-<body>
-    <header class="site-header">
-        <nav class="nav-wrap" aria-label="Navigasi utama">
-            <a class="brand" href="{{ route('home') }}">
-                <span class="brand-mark" aria-hidden="true">⌑</span>
-                <span>ruang baca</span>
-            </a>
-            <div class="nav-links">
-                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
-                <a class="nav-link {{ request()->routeIs('books.*') ? 'active' : '' }}" href="{{ route('books.index') }}">Koleksi</a>
-                <a class="nav-link {{ request()->routeIs('borrowers.*') ? 'active' : '' }}" href="{{ route('borrowers.index') }}">Anggota</a>
-                <a class="nav-link {{ request()->routeIs('borrowings.*') ? 'active' : '' }}" href="{{ route('borrowings.index') }}">Peminjaman</a>
+<body class="h-full text-slate-800 antialiased flex flex-col md:flex-row">
+
+    <!-- Mobile Header -->
+    <div class="md:hidden bg-slate-900 text-white px-4 py-3 flex items-center justify-between border-b border-slate-800 sticky top-0 z-40">
+        <a href="{{ url('/') }}" class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
             </div>
-            <a class="nav-cta" href="{{ route('books.create') }}">+ Tambah buku</a>
+            <span class="font-heading font-semibold tracking-tight text-base text-white">PerpusApp</span>
+        </a>
+        <button id="mobileMenuBtn" type="button" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 shrink-0 min-h-screen text-slate-300 transition-all duration-300 z-30">
+        <!-- Brand Logo -->
+        <div class="h-16 px-6 flex items-center gap-3 border-b border-slate-800/80">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-sm ring-1 ring-blue-400/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <div>
+                <span class="font-heading font-bold text-white text-base tracking-tight block">PerpusApp</span>
+                <span class="text-[11px] text-slate-400 font-medium block">Sistem Perpustakaan</span>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-3 py-6 space-y-1">
+            <p class="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menu Utama</p>
+
+            <!-- Nav: Data Buku -->
+            <a href="{{ route('books.index') }}"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 {{ request()->routeIs('books.*') ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold' : 'text-slate-300 hover:text-white hover:bg-slate-800/60' }} cursor-pointer">
+                <svg class="w-5 h-5 {{ request()->routeIs('books.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>Katalog Buku</span>
+            </a>
+
+            <!-- Nav: Data Peminjam -->
+            <a href="{{ route('borrowers.index') }}"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 {{ request()->routeIs('borrowers.*') ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold' : 'text-slate-300 hover:text-white hover:bg-slate-800/60' }} cursor-pointer">
+                <svg class="w-5 h-5 {{ request()->routeIs('borrowers.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Anggota / Peminjam</span>
+            </a>
+
+            <!-- Nav: Transaksi Peminjaman -->
+            <a href="{{ route('borrowings.index') }}"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 {{ request()->routeIs('borrowings.*') ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold' : 'text-slate-300 hover:text-white hover:bg-slate-800/60' }} cursor-pointer">
+                <svg class="w-5 h-5 {{ request()->routeIs('borrowings.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Peminjaman Buku</span>
+            </a>
         </nav>
-    </header>
-    <main class="page-wrap">
+
+        <!-- User / Admin Profile Card at Bottom of Sidebar -->
+        <div class="p-4 border-t border-slate-800/80">
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/40">
+                <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-200 font-semibold text-xs border border-slate-600">
+                    AD
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-semibold text-white truncate">Pustakawan</p>
+                    <p class="text-[11px] text-slate-400 truncate">Petugas Aktif</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col min-h-screen min-w-0 overflow-y-auto">
+        <!-- Top Navbar -->
+        <header class="h-16 bg-white border-b border-slate-200/80 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+            <div class="flex items-center gap-3">
+                <h1 class="text-lg font-heading font-bold text-slate-900">
+                    @yield('header_title', 'Perpustakaan')
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-3 text-xs text-slate-500">
+                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-medium border border-slate-200/60">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Sistem Siap Digunakan
+                </span>
+            </div>
+        </header>
+
+        <!-- Flash Message Notification -->
+        @if (session('success'))
+            <div class="mx-6 sm:mx-8 mt-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 shadow-xs">
+                <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-sm font-medium">{{ session('success') }}</span>
+            </div>
+        @endif
+
         @if ($errors->any())
-            <div class="error-list" role="alert">
-                <strong>Periksa kembali data yang diisi:</strong>
-                <ul>
+            <div class="mx-6 sm:mx-8 mt-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 shadow-xs">
+                <div class="flex items-center gap-2 mb-1 font-semibold text-sm">
+                    <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Terjadi kesalahan validasi:</span>
+                </div>
+                <ul class="list-disc list-inside text-xs space-y-0.5 text-rose-700">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
-        @yield('content')
-    </main>
-    <footer class="site-footer">Dibuat untuk cerita-cerita yang belum selesai dibaca. <span aria-hidden="true">✦</span></footer>
+
+        <!-- Page Content -->
+        <main class="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+            @yield('content')
+        </main>
+
+        <!-- Footer -->
+        <footer class="py-4 px-6 sm:px-8 border-t border-slate-200 text-xs text-slate-500 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 bg-white">
+            <p>&copy; {{ date('Y') }} Sistem Perpustakaan. Dirancang dengan standar UI/UX Pro Max.</p>
+            <p class="text-slate-400">Laravel 13 & Tailwind CSS</p>
+        </footer>
+    </div>
+
+    <!-- Mobile Drawer Toggle Script -->
+    <script>
+        document.getElementById('mobileMenuBtn')?.addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+    </script>
+
+    @stack('scripts')
 </body>
 </html>

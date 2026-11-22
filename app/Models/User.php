@@ -29,14 +29,4 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    // relasi One to One dengan UserProfile
-public function profile()
-{
-    return $this->hasOne('App\Models\UserProfile');
-}
-// relasi One to Many dengan Borrowing
-public function borrowings()
-{
-    return $this->hasMany('App\Models\Borrowing');
-}
 }

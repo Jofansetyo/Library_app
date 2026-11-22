@@ -9,9 +9,11 @@ class BookFactory extends Factory
     public function definition(): array
     {
         return [
-            'title'  => $this->faker->name(),
+            'title' => $this->faker->sentence(3),
             'author' => $this->faker->name(),
-            'year'   => $this->faker->randomElement([2000, 2001, 2002]),
+            'year' => $this->faker->numberBetween(1990, 2024),
+            'isbn' => $this->faker->isbn13(),
+            'location' => 'Rak ' . $this->faker->numberBetween(1, 20) . '-' . $this->faker->randomLetter(),
         ];
     }
 }

@@ -16,10 +16,13 @@ class Book extends Model
         'title',
         'author',
         'year',
+        'isbn',
+        'location',
     ];
+
     // relasi One to Many dengan Borrowing
-public function borrowings()
-{
-    return $this->hasMany('App\Models\Borrowing');
-}
+    public function borrowings()
+    {
+        return $this->hasMany(Borrowing::class);
+    }
 }

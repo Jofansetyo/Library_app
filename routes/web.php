@@ -1,76 +1,165 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BookController;
-use App\Http\Controllers\BorrowerController;
-use App\Http\Controllers\BorrowingController;
-use App\Models\User;
+use Illuminate\Http\Request;
+use App\Models\Book;
 use App\Models\Borrower;
 use App\Models\Borrowing;
 
+// Default
 Route::get('/', function () {
     return view('welcome');
-})->name('home');
-
-// Books
-Route::get('/books', [BookController::class, 'index'])->name('books.index');
-Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
-Route::post('/books', [BookController::class, 'store'])->name('books.store');
-Route::get('/books/{id}/edit', [BookController::class, 'edit'])->name('books.edit');
-Route::put('/books/{id}', [BookController::class, 'update'])->name('books.update');
-Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('books.destroy');
-
-// Borrowers
-Route::get('/borrowers', [BorrowerController::class, 'index'])->name('borrowers.index');
-Route::get('/borrowers/create', [BorrowerController::class, 'create'])->name('borrowers.create');
-Route::post('/borrowers', [BorrowerController::class, 'store'])->name('borrowers.store');
-Route::get('/borrowers/{id}/edit', [BorrowerController::class, 'edit'])->name('borrowers.edit');
-Route::put('/borrowers/{id}', [BorrowerController::class, 'update'])->name('borrowers.update');
-Route::delete('/borrowers/{id}', [BorrowerController::class, 'destroy'])->name('borrowers.destroy');
-
-// Borrowings
-Route::get('/borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
-Route::get('/borrowings/create', [BorrowingController::class, 'create'])->name('borrowings.create');
-Route::post('/borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
-Route::get('/borrowings/{id}/edit', [BorrowingController::class, 'edit'])->name('borrowings.edit');
-Route::put('/borrowings/{id}', [BorrowingController::class, 'update'])->name('borrowings.update');
-Route::delete('/borrowings/{id}', [BorrowingController::class, 'destroy'])->name('borrowings.destroy');
-
-// Test One to One - User Profile
-Route::get('/user-profile/{user_id}', function (string $id) {
-    $user = User::find($id);
-    echo $user->name;
-    echo "<br>";
-    echo $user->profile->address;
 });
 
-// Test One to Many - semua borrowing
+Route::get('/book', function () {
+    $books = Book::all();
+    return view('books.index', ['books' => $books]);
+})->name('books.index');
+
+Route::get('/book/create', function () {
+    return view('books.create');
+})->name('books.create');
+
+Route::post('/book', function (Request $request) {
+    $validated = $request->validate([
+        'title' => 'required',
+        'author' => 'required',
+        'year' => 'required|numeric',
+        'isbn' => 'nullable',
+        'location' => 'nullable',
+    ]);
+
+    Book::create($validated);
+
+    return redirect()->route('books.index');
+})->name('books.store');
+
+Route::get('/book/{id}/edit', function ($id) {
+    $book = Book::findOrFail($id);
+    return view('books.edit', ['book' => $book]);
+})->name('books.edit');
+
+Route::put('/book/{id}', function (Request $request, $id) {
+    $validated = $request->validate([
+        'title' => 'required',
+        'author' => 'required',
+        'year' => 'required|numeric',
+        'isbn' => 'nullable',
+        'location' => 'nullable',
+    ]);
+
+    $book = Book::findOrFail($id);
+    $book->update($validated);
+
+    return redirect()->route('books.index');
+})->name('books.update');
+
+Route::delete('/book/{id}', function ($id) {
+    $book = Book::findOrFail($id);
+    $book->delete();
+
+    return redirect()->route('books.index');
+})->name('books.destroy');
+
+Route::get('/borrower', function () {
+    $borrowers = Borrower::all();
+    return view('borrowers.index', ['borrowers' => $borrowers]);
+})->name('borrowers.index');
+
+Route::get('/borrower/create', function () {
+    return view('borrowers.create');
+})->name('borrowers.create');
+
+Route::post('/borrower', function (Request $request) {
+    $validated = $request->validate([
+        'name' => 'required',
+        'phone' => 'nullable',
+        'address' => 'nullable',
+    ]);
+
+    Borrower::create($validated);
+
+    return redirect()->route('borrowers.index');
+})->name('borrowers.store');
+
+Route::get('/borrower/{id}/edit', function ($id) {
+    $borrower = Borrower::findOrFail($id);
+    return view('borrowers.edit', ['borrower' => $borrower]);
+})->name('borrowers.edit');
+
+Route::put('/borrower/{id}', function (Request $request, $id) {
+    $validated = $request->validate([
+        'name' => 'required',
+        'phone' => 'nullable',
+        'address' => 'nullable',
+    ]);
+
+    $borrower = Borrower::findOrFail($id);
+    $borrower->update($validated);
+
+    return redirect()->route('borrowers.index');
+})->name('borrowers.update');
+
+Route::delete('/borrower/{id}', function ($id) {
+    $borrower = Borrower::findOrFail($id);
+    $borrower->delete();
+
+    return redirect()->route('borrowers.index');
+})->name('borrowers.destroy');
+
 Route::get('/borrowing', function () {
-    $borrowing = Borrowing::all();
-    foreach ($borrowing as $key => $value) {
-        echo "Book: " . $value->book->title . ' | User:' . $value->borrower->name;
-        echo "<br>";
-    }
-});
+    $borrowings = Borrowing::all();
+    return view('borrowings.index', ['borrowings' => $borrowings]);
+})->name('borrowings.index');
 
-// Test One to Many - borrowing by borrower
-Route::get('/borrower/{user_id}', function (string $id) {
-    $borrower = Borrower::find($id);
-    echo $borrower->name;
-    echo "<br>";
-    foreach ($borrower->borrowings as $key => $value) {
-        echo "Book: " . $value->book->title;
-        echo "<br>";
-    }
-});
+Route::get('/borrowing/create', function () {
+    $borrowers = Borrower::all();
+    $books = Book::all();
+    return view('borrowings.create', ['borrowers' => $borrowers, 'books' => $books]);
+})->name('borrowings.create');
 
-// Test One to Many - book borrowers
-Route::get('/book-borrow/{book_id}', function (string $id) {
-    $book = \App\Models\Book::find($id);
-    echo $book->title;
-    echo "<br>";
-    foreach ($book->borrowings as $key => $value) {
-        echo "Borrower: " . $value->borrower->name;
-        echo "<br>";
-    }
-});
+Route::post('/borrowing', function (Request $request) {
+    $validated = $request->validate([
+        'borrower_id' => 'required|exists:borrowers,id',
+        'book_id' => 'required|exists:books,id',
+        'borrow_date' => 'required|date',
+        'return_date' => 'required|date',
+    ]);
+
+    Borrowing::create($validated);
+
+    return redirect()->route('borrowings.index');
+})->name('borrowings.store');
+
+Route::get('/borrowing/{id}/edit', function ($id) {
+    $borrowing = Borrowing::findOrFail($id);
+    $borrowers = Borrower::all();
+    $books = Book::all();
+    return view('borrowings.edit', [
+        'borrowing' => $borrowing,
+        'borrowers' => $borrowers,
+        'books' => $books,
+    ]);
+})->name('borrowings.edit');
+
+Route::put('/borrowing/{id}', function (Request $request, $id) {
+    $validated = $request->validate([
+        'borrower_id' => 'required|exists:borrowers,id',
+        'book_id' => 'required|exists:books,id',
+        'borrow_date' => 'required|date',
+        'return_date' => 'required|date',
+        'actual_return_date' => 'nullable|date',
+    ]);
+
+    $borrowing = Borrowing::findOrFail($id);
+    $borrowing->update($validated);
+
+    return redirect()->route('borrowings.index');
+})->name('borrowings.update');
+
+Route::delete('/borrowing/{id}', function ($id) {
+    $borrowing = Borrowing::findOrFail($id);
+    $borrowing->delete();
+
+    return redirect()->route('borrowings.index');
+})->name('borrowings.destroy');
