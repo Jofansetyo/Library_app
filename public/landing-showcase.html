@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA // Next-Gen Spatial Intelligence & Creative Studio</title>
+
+    <!-- Google Fonts: Syne & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@500;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0A0A0E',
+                        darkSurface: '#12121A',
+                        darkCard: '#181824',
+                        darkBorder: 'rgba(255, 255, 255, 0.08)',
+                        accentViolet: '#8B5CF6',
+                        accentCyan: '#06B6D4',
+                        textWhite: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        heading: ['Syne', 'sans-serif'],
+                        body: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 20s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP & Lenis Smooth Scroll -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+    <style>
+        /* Base Reset & Hardware Accelerated Render */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background-color: #0A0A0E;
+            color: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor */
+        }
+
+        @media (pointer: coarse) {
+            body {
+                cursor: auto; /* Revert on touch devices */
+            }
+            .custom-cursor, .cursor-dot {
+                display: none !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #272738;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8B5CF6;
+        }
+
+        /* Custom Magnetic Cursor */
+        .custom-cursor {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(139, 92, 246, 0.6);
+            mix-blend-mode: difference;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                        height 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                        background 0.3s ease, 
+                        border-color 0.3s ease;
+            will-change: transform;
+        }
+
+        .cursor-dot {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #06B6D4;
+            mix-blend-mode: difference;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+        }
+
+        .custom-cursor.active {
+            width: 72px;
+            height: 72px;
+            background-color: rgba(248, 250, 252, 0.15);
+            border-color: rgba(6, 182, 212, 0.8);
+            backdrop-filter: blur(2px);
+        }
+
+        /* Ambient Mesh Light */
+        .ambient-mesh {
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.28;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        /* 3D Tilt Bento Card & Spotlight */
+        .bento-card {
+            position: relative;
+            background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(139, 92, 246, 0.12), transparent 40%), #14141E;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            transform-style: preserve-3d;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            will-change: transform;
+        }
+
+        .bento-card:hover {
+            border-color: rgba(139, 92, 246, 0.35);
+            box-shadow: 0 20px 40px -15px rgba(10, 10, 14, 0.8), 0 0 30px -10px rgba(139, 92, 246, 0.25);
+        }
+
+        .bento-content {
+            transform: translateZ(30px);
+        }
+
+        /* Running Border Gradient Light on CTA */
+        .btn-luminous {
+            position: relative;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(12, 12, 18, 0.98));
+            border-radius: 9999px;
+            padding: 1.5px;
+            overflow: hidden;
+            display: inline-flex;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+        }
+
+        .btn-luminous::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, transparent, #8B5CF6, #06B6D4, transparent);
+            animation: rotateGlow 4s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-luminous-inner {
+            position: relative;
+            background: #0E0E16;
+            border-radius: 9999px;
+            padding: 0.85rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 0.925rem;
+            letter-spacing: 0.02em;
+            color: #F8FAFC;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* Shimmer Sheen on Click/Hover */
+        .btn-luminous-inner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-luminous:hover .btn-luminous-inner::after {
+            left: 100%;
+        }
+
+        /* Expand Underline Link */
+        .hover-link {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .hover-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0%;
+            height: 1.5px;
+            background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+            transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hover-link:hover::after {
+            width: 100%;
+            left: 0%;
+        }
+
+        /* Ticker Marquee */
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marquee 25s linear infinite;
+        }
+
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Prefers-reduced-motion Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .marquee-track {
+                animation: none !important;
+            }
+            .ambient-mesh {
+                filter: none;
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-textWhite selection:bg-accentViolet selection:text-white relative">
+
+    <!-- Interactive Custom Magnetic Cursor -->
+    <div class="custom-cursor" id="customCursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <!-- Ambient Mesh Glows (Hardware Accelerated Floating Lights) -->
+    <div class="ambient-mesh bg-accentViolet top-[-100px] left-[-150px] animate-pulse-slow"></div>
+    <div class="ambient-mesh bg-accentCyan top-[30%] right-[-200px] animate-pulse-slow" style="animation-delay: 2.5s;"></div>
+    <div class="ambient-mesh bg-accentViolet bottom-[10%] left-[10%] animate-pulse-slow" style="animation-delay: 5s;"></div>
+
+    <!-- Navigation Header -->
+    <header class="fixed top-0 left-0 w-full z-50 px-6 sm:px-12 py-5 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto flex items-center justify-between backdrop-blur-xl bg-dark/60 border border-white/10 px-6 py-3.5 rounded-full shadow-2xl">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-2.5 magnetic" data-magnetic-strength="0.3">
+                <span class="w-8 h-8 rounded-lg bg-gradient-to-tr from-accentViolet to-accentCyan flex items-center justify-center font-heading font-black text-white text-base shadow-lg shadow-accentViolet/30">
+                    A
+                </span>
+                <span class="font-heading font-extrabold tracking-wider text-lg text-white">
+                    AURA<span class="text-accentCyan">.</span>
+                </span>
+            </a>
+
+            <!-- Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#services" class="hover-link hover:text-white transition-colors">Capabilities</a>
+                <a href="#showcase" class="hover-link hover:text-white transition-colors">Showcase</a>
+                <a href="#metrics" class="hover-link hover:text-white transition-colors">Impact</a>
+                <a href="#contact" class="hover-link hover:text-white transition-colors">Contact</a>
+            </nav>
+
+            <!-- Header Action -->
+            <div class="flex items-center gap-4">
+                <a href="#contact" class="btn-luminous magnetic" data-magnetic-strength="0.4">
+                    <span class="btn-luminous-inner">
+                        <span>Get In Touch</span>
+                        <svg class="w-4 h-4 text-accentCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 pt-32 sm:pt-40">
+
+        <!-- ========================================================================= -->
+        <!-- 1. HERO SECTION -->
+        <!-- ========================================================================= -->
+        <section class="min-h-[85vh] flex flex-col justify-center px-6 sm:px-12 max-w-7xl mx-auto relative">
+            <!-- Top Status Pill -->
+            <div class="hero-reveal mb-6 inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md w-fit">
+                <span class="w-2 h-2 rounded-full bg-accentCyan animate-ping"></span>
+                <span class="w-2 h-2 rounded-full bg-accentCyan absolute ml-0"></span>
+                <span class="text-xs font-semibold tracking-wider uppercase text-slate-300 pl-2">Next Gen Spatial Design Studio 2026</span>
+            </div>
+
+            <!-- Staggered Big Headline -->
+            <div class="hero-title font-heading font-black text-5xl sm:text-7xl lg:text-9xl tracking-tight leading-[0.95] text-white">
+                <div class="overflow-hidden">
+                    <span class="inline-block transform-gpu hero-word">WE CRAFT</span>
+                </div>
+                <div class="overflow-hidden flex items-center flex-wrap gap-4 sm:gap-6 mt-1">
+                    <span class="inline-block transform-gpu hero-word bg-clip-text text-transparent bg-gradient-to-r from-accentViolet via-white to-accentCyan">
+                        DIGITAL
+                    </span>
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accentViolet/40 bg-accentViolet/10 text-xs sm:text-sm font-body font-semibold text-accentViolet uppercase tracking-wider backdrop-blur-sm self-center">
+                        ★ Awwwards SOTD
+                    </span>
+                </div>
+                <div class="overflow-hidden">
+                    <span class="inline-block transform-gpu hero-word">OBSESSIONS.</span>
+                </div>
+            </div>
+
+            <!-- Subheading & Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mt-12 items-end">
+                <p class="md:col-span-7 text-lg sm:text-xl text-slate-400 font-normal leading-relaxed hero-reveal">
+                    A multi-disciplinary creative engineering agency fusing architectural precision, fluid WebGL choreography, and spatial brand systems to reshape the modern web.
+                </p>
+
+                <div class="md:col-span-5 flex flex-wrap items-center gap-5 md:justify-end hero-reveal">
+                    <a href="#showcase" class="btn-luminous magnetic" data-magnetic-strength="0.5">
+                        <span class="btn-luminous-inner px-8 py-4 text-base">
+                            <span>Explore Selected Works</span>
+                            <svg class="w-5 h-5 text-accentCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Floating Spatial Badges -->
+            <div class="hidden lg:grid grid-cols-3 gap-6 mt-20 pt-10 border-t border-white/10 hero-reveal">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono text-accentCyan">01/</span>
+                    <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Adaptive Framerate (60fps)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono text-accentViolet">02/</span>
+                    <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Zero Latency Micro-Physics</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono text-emerald-400">03/</span>
+                    <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Global WebGL & Shader Lab</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- KINETIC INFINITE TICKER / MARQUEE -->
+        <!-- ========================================================================= -->
+        <section class="py-14 my-16 border-y border-white/10 bg-darkSurface/50 overflow-hidden relative">
+            <div class="marquee-track flex items-center gap-12 font-heading font-black text-3xl sm:text-5xl uppercase tracking-tighter text-slate-400">
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    SPATIAL COMPUTING <span class="text-accentViolet">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    CREATIVE DIRECTION <span class="text-accentCyan">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    HIGH PERFORMANCE SHADERS <span class="text-accentViolet">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    AWWWARDS OF THE DAY <span class="text-accentCyan">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    MICRO-INTERACTIONS <span class="text-accentViolet">✦</span>
+                </span>
+                <!-- Duplicate for seamless infinite loop -->
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    SPATIAL COMPUTING <span class="text-accentViolet">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    CREATIVE DIRECTION <span class="text-accentCyan">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    HIGH PERFORMANCE SHADERS <span class="text-accentViolet">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    AWWWARDS OF THE DAY <span class="text-accentCyan">✦</span>
+                </span>
+                <span class="flex items-center gap-6 hover:text-white transition-colors">
+                    MICRO-INTERACTIONS <span class="text-accentViolet">✦</span>
+                </span>
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- 2. BENTO GRID FEATURES & CAPABILITIES -->
+        <!-- ========================================================================= -->
+        <section id="services" class="py-24 px-6 sm:px-12 max-w-7xl mx-auto">
+            <div class="mb-16">
+                <div class="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-accentCyan uppercase mb-3">
+                    <span class="w-2 h-2 rounded-sm bg-accentCyan"></span>
+                    <span>Core Engineering</span>
+                </div>
+                <h2 class="font-heading font-black text-4xl sm:text-6xl text-white tracking-tight">
+                    BENTO CAPABILITIES<span class="text-accentViolet">.</span>
+                </h2>
+                <p class="text-slate-400 mt-4 max-w-xl text-base sm:text-lg">
+                    Setiap modul dirancang dengan arsitektur interaktif 3D tilt real-time dan spotlight dinamis.
+                </p>
+            </div>
+
+            <!-- Bento Grid 3D Tilt Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+                <!-- Bento Card 1 (Span 8) -->
+                <div class="bento-card md:col-span-8 p-8 sm:p-10 min-h-[360px] flex flex-col justify-between overflow-hidden group" data-tilt>
+                    <div class="bento-content z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-accentCyan mb-6 group-hover:scale-110 group-hover:bg-accentCyan/20 transition-all duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-mono uppercase tracking-widest text-accentCyan">01 // Visual Architecture</span>
+                        <h3 class="font-heading font-bold text-2xl sm:text-4xl text-white mt-2">Spatial Design & WebGL Experiences</h3>
+                        <p class="text-slate-400 text-sm sm:text-base mt-4 max-w-md leading-relaxed">
+                            Membangun pengalaman immersive multi-dimensi dengan fragment shaders custom, depth-field blur, dan dynamic lighting 60 FPS.
+                        </p>
+                    </div>
+
+                    <div class="bento-content flex items-center justify-between mt-8 pt-6 border-t border-white/5">
+                        <span class="text-xs font-semibold text-slate-500">Three.js • GLSL • WebGPU</span>
+                        <span class="text-xs font-bold text-accentCyan flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            Explore Stack →
+                        </span>
+                    </div>
+
+                    <!-- Ambient Glow in Card -->
+                    <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-accentCyan/15 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                </div>
+
+                <!-- Bento Card 2 (Span 4) -->
+                <div class="bento-card md:col-span-4 p-8 sm:p-10 min-h-[360px] flex flex-col justify-between overflow-hidden group" data-tilt>
+                    <div class="bento-content z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-accentViolet mb-6 group-hover:scale-110 group-hover:bg-accentViolet/20 transition-all duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-mono uppercase tracking-widest text-accentViolet">02 // Motion Science</span>
+                        <h3 class="font-heading font-bold text-2xl text-white mt-2">Organic Micro-Physics</h3>
+                        <p class="text-slate-400 text-sm mt-3 leading-relaxed">
+                            Interaksi berbasis pegas elastis (*spring physics*) yang merespons setiap gerakan kursor secara organik.
+                        </p>
+                    </div>
+
+                    <div class="bento-content mt-6">
+                        <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-accentViolet to-accentCyan w-3/4 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bento Card 3 (Span 4) -->
+                <div class="bento-card md:col-span-4 p-8 sm:p-10 min-h-[340px] flex flex-col justify-between overflow-hidden group" data-tilt>
+                    <div class="bento-content z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-400 mb-6 group-hover:scale-110 group-hover:bg-emerald-400/20 transition-all duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400">03 // Architecture</span>
+                        <h3 class="font-heading font-bold text-2xl text-white mt-2">Enterprise Ready</h3>
+                        <p class="text-slate-400 text-sm mt-3">
+                            Aksesibilitas WCAG AA, performa Core Web Vitals 99+, dan kesiapan SEO kelas dunia.
+                        </p>
+                    </div>
+                    <div class="bento-content text-xs font-mono text-slate-500">
+                        LIGHTHOUSE 100/100
+                    </div>
+                </div>
+
+                <!-- Bento Card 4 (Span 8) -->
+                <div class="bento-card md:col-span-8 p-8 sm:p-10 min-h-[340px] flex flex-col justify-between overflow-hidden group" data-tilt>
+                    <div class="bento-content z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-accentViolet mb-6 group-hover:scale-110 group-hover:bg-accentViolet/20 transition-all duration-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-mono uppercase tracking-widest text-accentViolet">04 // Kinetic Systems</span>
+                        <h3 class="font-heading font-bold text-2xl sm:text-3xl text-white mt-2">Awwwards-Caliber Creative Typography</h3>
+                        <p class="text-slate-400 text-sm sm:text-base mt-3 max-w-lg">
+                            Koreografi teks kinetik yang terikat pada event scroll pembaca, menciptakan ritme membaca yang sinematik.
+                        </p>
+                    </div>
+
+                    <div class="bento-content flex flex-wrap gap-3 mt-6">
+                        <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">Lenis Integration</span>
+                        <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">GSAP ScrollTrigger</span>
+                        <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">SVG Morphing</span>
+                    </div>
+
+                    <!-- Ambient Glow in Card -->
+                    <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-accentViolet/15 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- 3. SHOWCASE / PORTFOLIO SECTION -->
+        <!-- ========================================================================= -->
+        <section id="showcase" class="py-24 px-6 sm:px-12 max-w-7xl mx-auto border-t border-white/10">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+                <div>
+                    <div class="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-accentViolet uppercase mb-3">
+                        <span class="w-2 h-2 rounded-sm bg-accentViolet"></span>
+                        <span>Hall of Fame</span>
+                    </div>
+                    <h2 class="font-heading font-black text-4xl sm:text-6xl text-white tracking-tight">
+                        FEATURED WORKS<span class="text-accentCyan">.</span>
+                    </h2>
+                </div>
+                <p class="text-slate-400 text-sm sm:text-base max-w-md">
+                    Koleksi proyek terpilih yang dianugerahi Site of the Day dan Developer Award.
+                </p>
+            </div>
+
+            <!-- Portfolio Cards Grid with Parallax Effect -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+
+                <!-- Project 1 -->
+                <div class="portfolio-item group cursor-pointer">
+                    <div class="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/10 bg-darkSurface mb-6">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent z-10 opacity-60 group-hover:opacity-30 transition-opacity duration-500"></div>
+                        <!-- Mockup Visual Artwork -->
+                        <div class="w-full h-full bg-gradient-to-br from-indigo-900/60 via-purple-900/40 to-dark p-8 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-700 ease-out">
+                            <div class="w-36 h-36 rounded-full border border-accentViolet/50 flex items-center justify-center relative">
+                                <div class="w-24 h-24 rounded-full bg-accentViolet/20 backdrop-blur-xl animate-pulse-slow"></div>
+                                <span class="absolute font-mono text-xs text-accentCyan tracking-widest">KINETIC 01</span>
+                            </div>
+                        </div>
+                        <div class="absolute top-6 right-6 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:bg-accentCyan group-hover:text-dark group-hover:rotate-45 transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-mono uppercase text-accentViolet font-semibold tracking-wider">Spatial Audio // 2026</span>
+                            <h3 class="font-heading font-bold text-2xl text-white mt-1 group-hover:text-accentCyan transition-colors">Vortex Soundscape Engine</h3>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-500 border border-white/10 px-3 py-1 rounded-full">SOTD Winner</span>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="portfolio-item group cursor-pointer md:translate-y-12">
+                    <div class="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/10 bg-darkSurface mb-6">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent z-10 opacity-60 group-hover:opacity-30 transition-opacity duration-500"></div>
+                        <!-- Mockup Visual Artwork -->
+                        <div class="w-full h-full bg-gradient-to-br from-cyan-950/60 via-slate-900/40 to-dark p-8 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-700 ease-out">
+                            <div class="w-48 h-32 rounded-2xl border border-accentCyan/40 flex items-center justify-center bg-white/5 backdrop-blur-md relative transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
+                                <div class="w-12 h-12 rounded-xl bg-accentCyan/20 flex items-center justify-center text-accentCyan">
+                                    ✦
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-6 right-6 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:bg-accentCyan group-hover:text-dark group-hover:rotate-45 transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-mono uppercase text-accentCyan font-semibold tracking-wider">AI Platform // 2026</span>
+                            <h3 class="font-heading font-bold text-2xl text-white mt-1 group-hover:text-accentCyan transition-colors">Neural Synthetics Cloud</h3>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-500 border border-white/10 px-3 py-1 rounded-full">Developer SOTM</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- 4. METRICS / NUMERICAL IMPACT (ANIMATED COUNTER) -->
+        <!-- ========================================================================= -->
+        <section id="metrics" class="py-24 px-6 sm:px-12 max-w-7xl mx-auto border-t border-white/10 mt-16">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+
+                <!-- Metric 1 -->
+                <div class="metric-item border-l-2 border-accentViolet pl-6">
+                    <div class="flex items-baseline">
+                        <span class="counter font-heading font-black text-5xl sm:text-7xl text-white" data-target="99">0</span>
+                        <span class="font-heading font-black text-4xl text-accentCyan">%</span>
+                    </div>
+                    <p class="text-xs font-mono uppercase tracking-widest text-slate-400 mt-2">Smooth Frame Rate</p>
+                    <p class="text-xs text-slate-500 mt-1">Guaranteed 60fps WebGL pipeline</p>
+                </div>
+
+                <!-- Metric 2 -->
+                <div class="metric-item border-l-2 border-accentCyan pl-6">
+                    <div class="flex items-baseline">
+                        <span class="counter font-heading font-black text-5xl sm:text-7xl text-white" data-target="42">0</span>
+                        <span class="font-heading font-black text-4xl text-accentViolet">+</span>
+                    </div>
+                    <p class="text-xs font-mono uppercase tracking-widest text-slate-400 mt-2">Awwwards & Honors</p>
+                    <p class="text-xs text-slate-500 mt-1">Global design recognitions</p>
+                </div>
+
+                <!-- Metric 3 -->
+                <div class="metric-item border-l-2 border-accentViolet pl-6">
+                    <div class="flex items-baseline">
+                        <span class="counter font-heading font-black text-5xl sm:text-7xl text-white" data-target="18">0</span>
+                        <span class="font-heading font-black text-4xl text-accentCyan">M</span>
+                    </div>
+                    <p class="text-xs font-mono uppercase tracking-widest text-slate-400 mt-2">Unique Impressions</p>
+                    <p class="text-xs text-slate-500 mt-1">Engaged visitors worldwide</p>
+                </div>
+
+                <!-- Metric 4 -->
+                <div class="metric-item border-l-2 border-emerald-400 pl-6">
+                    <div class="flex items-baseline">
+                        <span class="counter font-heading font-black text-5xl sm:text-7xl text-white" data-target="100">0</span>
+                        <span class="font-heading font-black text-4xl text-emerald-400">%</span>
+                    </div>
+                    <p class="text-xs font-mono uppercase tracking-widest text-slate-400 mt-2">Client Satisfaction</p>
+                    <p class="text-xs text-slate-500 mt-1">Bespoke architectural craft</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- 5. MASSIVE MAGNETIC FOOTER CTA -->
+        <!-- ========================================================================= -->
+        <footer id="contact" class="py-24 px-6 sm:px-12 max-w-7xl mx-auto border-t border-white/10 mt-16 relative">
+            <div class="bg-gradient-to-b from-darkSurface/90 to-dark p-10 sm:p-20 rounded-[2.5rem] border border-white/10 text-center relative overflow-hidden">
+
+                <!-- Ambient Glow inside Footer -->
+                <div class="ambient-mesh bg-accentViolet/30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96"></div>
+
+                <div class="relative z-10 max-w-3xl mx-auto">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accentCyan/30 bg-accentCyan/10 text-xs font-mono text-accentCyan uppercase tracking-widest mb-6">
+                        ✦ Have an ambitious vision?
+                    </span>
+
+                    <h2 class="font-heading font-black text-4xl sm:text-7xl text-white tracking-tight leading-tight">
+                        LET'S BUILD SOMETHING <span class="bg-clip-text text-transparent bg-gradient-to-r from-accentViolet via-white to-accentCyan">ICONIC</span>.
+                    </h2>
+
+                    <p class="text-slate-400 text-base sm:text-xl mt-6">
+                        Kami hanya menerima 2 proyek kustom terpilih per kuartal untuk memastikan dedikasi kualitas tingkat tertinggi.
+                    </p>
+
+                    <!-- Massive Magnetic Button -->
+                    <div class="mt-10">
+                        <a href="mailto:hello@aurastudio.io" class="btn-luminous magnetic" data-magnetic-strength="0.6">
+                            <span class="btn-luminous-inner px-10 py-5 text-lg">
+                                <span>Initiate Collaboration</span>
+                                <svg class="w-6 h-6 text-accentCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                </svg>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom Meta -->
+                <div class="relative z-10 pt-16 mt-16 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
+                    <div class="flex items-center gap-4">
+                        <span>© 2026 AURA STUDIO INC.</span>
+                        <span>•</span>
+                        <span>ALL RIGHTS RESERVED</span>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <a href="#" class="hover-link hover:text-white transition-colors">TWITTER (X)</a>
+                        <a href="#" class="hover-link hover:text-white transition-colors">GITHUB</a>
+                        <a href="#" class="hover-link hover:text-white transition-colors">DRIBBBLE</a>
+                        <a href="#" class="hover-link hover:text-white transition-colors">AWWWARDS</a>
+                    </div>
+                </div>
+
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- JAVASCRIPT: LENIS, GSAP, MAGNETIC MOUSE & 3D BENTO PHYSICS -->
+    <!-- ========================================================================= -->
+    <script>
+        // Check for reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // 1. Initialize Lenis Smooth Scroll (Butter Smooth 60fps)
+        let lenis;
+        if (!prefersReducedMotion) {
+            lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1,
+                touchMultiplier: 2,
+            });
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+        }
+
+        // 2. Custom Magnetic Cursor Physics
+        const cursor = document.getElementById('customCursor');
+        const cursorDot = document.getElementById('cursorDot');
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let cursorX = mouseX, cursorY = mouseY;
+        let dotX = mouseX, dotY = mouseY;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function renderCursor() {
+            // Easing lerp for outer ring
+            cursorX += (mouseX - cursorX) * 0.18;
+            cursorY += (mouseY - cursorY) * 0.18;
+            cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+
+            // Faster lerp for center dot
+            dotX += (mouseX - dotX) * 0.75;
+            dotY += (mouseY - dotY) * 0.75;
+            cursorDot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
+
+            requestAnimationFrame(renderCursor);
+        }
+        if (!prefersReducedMotion && window.matchMedia('(pointer: fine)').matches) {
+            renderCursor();
+        }
+
+        // Expand cursor on interactive elements
+        const interactives = document.querySelectorAll('a, button, .bento-card, .portfolio-item');
+        interactives.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('active'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+        });
+
+        // 3. Magnetic Element Effect (Magnet Pull on Hover)
+        if (!prefersReducedMotion) {
+            const magneticElements = document.querySelectorAll('.magnetic');
+            magneticElements.forEach((el) => {
+                const strength = parseFloat(el.getAttribute('data-magnetic-strength') || '0.3');
+
+                el.addEventListener('mousemove', (e) => {
+                    const rect = el.getBoundingClientRect();
+                    const x = (e.clientX - rect.left - rect.width / 2) * strength;
+                    const y = (e.clientY - rect.top - rect.height / 2) * strength;
+                    gsap.to(el, { x: x, y: y, duration: 0.3, ease: 'power2.out' });
+                });
+
+                el.addEventListener('mouseleave', () => {
+                    gsap.to(el, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.3)' });
+                });
+            });
+        }
+
+        // 4. Bento Card 3D Perspective Tilt & Spotlight Tracking
+        const bentoCards = document.querySelectorAll('[data-tilt]');
+        bentoCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Update CSS variables for radial spotlight
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+
+                if (!prefersReducedMotion) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -7; // max 7 deg tilt
+                    const rotateY = ((x - centerX) / centerX) * 7;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        });
+
+        // 5. GSAP ScrollTrigger Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        if (!prefersReducedMotion) {
+            // Hero Reveal Stagger
+            gsap.from('.hero-word', {
+                y: 120,
+                opacity: 0,
+                duration: 1.2,
+                stagger: 0.15,
+                ease: 'power4.out',
+                delay: 0.2
+            });
+
+            gsap.from('.hero-reveal', {
+                y: 40,
+                opacity: 0,
+                duration: 1.0,
+                stagger: 0.2,
+                ease: 'power3.out',
+                delay: 0.6
+            });
+
+            // Parallax on Portfolio Items
+            gsap.utils.toArray('.portfolio-item').forEach((item, index) => {
+                gsap.from(item, {
+                    scrollTrigger: {
+                        trigger: item,
+                        start: 'top 85%',
+                    },
+                    y: 60,
+                    opacity: 0,
+                    duration: 1.2,
+                    ease: 'power3.out'
+                });
+            });
+
+            // Animated Metrics Counter (Roll Up from 0 to Target)
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                ScrollTrigger.create({
+                    trigger: counter,
+                    start: 'top 85%',
+                    once: true,
+                    onEnter: () => {
+                        gsap.to(counter, {
+                            innerText: target,
+                            duration: 2.2,
+                            snap: { innerText: 1 },
+                            ease: 'power3.out'
+                        });
+                    }
+                });
+            });
+        } else {
+            // If user prefers reduced motion, set counters immediately
+            document.querySelectorAll('.counter').forEach(c => {
+                c.innerText = c.getAttribute('data-target');
+            });
+        }
+    </script>
+</body>
+</html>
