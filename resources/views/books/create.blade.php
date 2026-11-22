@@ -49,7 +49,7 @@
                        value="{{ old('title') }}"
                        required
                        placeholder="Contoh: Laskar Pelangi, Bumi Manusia..."
-                       class="w-full px-4 py-2.5 bg-white border @error('title') border-rose-400 focus:ring-rose-500/10 @else border-slate-200 focus:ring-blue-500/10 focus:border-blue-500 @enderror rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-4 transition-all">
+                       class="w-full px-4 py-2.5 bg-white border @error('title') border-rose-400 focus:ring-rose-500/10 @else border-slate-300 focus:ring-blue-600/10 focus:border-blue-600 @enderror rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 transition-all">
                 @error('title')
                     <p class="text-xs text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
@@ -66,7 +66,7 @@
                        value="{{ old('author') }}"
                        required
                        placeholder="Contoh: Pramoedya Ananta Toer, Andrea Hirata..."
-                       class="w-full px-4 py-2.5 bg-white border @error('author') border-rose-400 focus:ring-rose-500/10 @else border-slate-200 focus:ring-blue-500/10 focus:border-blue-500 @enderror rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-4 transition-all">
+                       class="w-full px-4 py-2.5 bg-white border @error('author') border-rose-400 focus:ring-rose-500/10 @else border-slate-300 focus:ring-blue-600/10 focus:border-blue-600 @enderror rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 transition-all">
                 @error('author')
                     <p class="text-xs text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
@@ -87,7 +87,7 @@
                            min="1800"
                            max="{{ date('Y') + 1 }}"
                            placeholder="2024"
-                           class="w-full px-4 py-2.5 bg-white border @error('year') border-rose-400 focus:ring-rose-500/10 @else border-slate-200 focus:ring-blue-500/10 focus:border-blue-500 @enderror rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-4 transition-all">
+                           class="w-full px-4 py-2.5 bg-white border @error('year') border-rose-400 focus:ring-rose-500/10 @else border-slate-300 focus:ring-blue-600/10 focus:border-blue-600 @enderror rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 transition-all">
                     @error('year')
                         <p class="text-xs text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                     @enderror
@@ -103,7 +103,7 @@
                            name="isbn"
                            value="{{ old('isbn') }}"
                            placeholder="978-602-03-..."
-                           class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-mono text-xs">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all font-mono text-xs">
                 </div>
 
                 <!-- Lokasi Rak -->
@@ -113,6 +113,12 @@
                     </label>
                     <input type="text"
                            id="location"
+                           name="location"
+                           value="{{ old('location') }}"
+                           placeholder="Contoh: Rak A-02"
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all">
+                </div>
+            </div>
                            name="location"
                            value="{{ old('location') }}"
                            placeholder="Contoh: Rak A-02"
