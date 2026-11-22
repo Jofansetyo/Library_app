@@ -1,15 +1,53 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Borrower;
 use App\Models\Borrowing;
 
-// Default
+// Landing and authentication
 Route::get('/', function () {
-    return view('welcome');
-});
+    return response()->file(public_path('landing-showcase.html'));
+})->name('landing');
+
+Route::get('/catalog', function () {
+    return view('catalog.index', ['books' => Book::query()->latest()->get()]);
+})->name('catalog.index');
+
+Route::get('/login', function () {
+    if (Auth::check()) {
+        return redirect()->route('books.index');
+    }
+
+    return view('auth.login');
+})->name('login');
+
+Route::post('/login', function (Request $request) {
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required', 'string'],
+    ]);
+
+    if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('books.index'));
+    }
+
+    return back()->withErrors([
+        'email' => 'Email atau password tidak sesuai.',
+    ])->onlyInput('email');
+})->name('login.store');
+
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('landing');
+})->name('logout');
 
 Route::get('/book', function () {
     $books = Book::all();
@@ -56,6 +94,13 @@ Route::put('/book/{id}', function (Request $request, $id) {
 
 Route::delete('/book/{id}', function ($id) {
     $book = Book::findOrFail($id);
+
+    if ($book->borrowings()->whereNull('actual_return_date')->exists()) {
+        return back()->withErrors([
+            'delete' => 'Buku tidak dapat dihapus karena masih dalam peminjaman aktif.',
+        ]);
+    }
+
     $book->delete();
 
     return redirect()->route('books.index');
@@ -102,6 +147,13 @@ Route::put('/borrower/{id}', function (Request $request, $id) {
 
 Route::delete('/borrower/{id}', function ($id) {
     $borrower = Borrower::findOrFail($id);
+
+    if ($borrower->borrowings()->whereNull('actual_return_date')->exists()) {
+        return back()->withErrors([
+            'delete' => 'Peminjam tidak dapat dihapus karena masih memiliki peminjaman aktif.',
+        ]);
+    }
+
     $borrower->delete();
 
     return redirect()->route('borrowers.index');
@@ -123,8 +175,18 @@ Route::post('/borrowing', function (Request $request) {
         'borrower_id' => 'required|exists:borrowers,id',
         'book_id' => 'required|exists:books,id',
         'borrow_date' => 'required|date',
-        'return_date' => 'required|date',
+        'return_date' => 'required|date|after_or_equal:borrow_date',
     ]);
+
+    $bookIsBorrowed = Borrowing::where('book_id', $validated['book_id'])
+        ->whereNull('actual_return_date')
+        ->exists();
+
+    if ($bookIsBorrowed) {
+        return back()->withErrors([
+            'book_id' => 'Buku ini sedang dipinjam dan belum dikembalikan.',
+        ])->withInput();
+    }
 
     Borrowing::create($validated);
 
@@ -147,11 +209,23 @@ Route::put('/borrowing/{id}', function (Request $request, $id) {
         'borrower_id' => 'required|exists:borrowers,id',
         'book_id' => 'required|exists:books,id',
         'borrow_date' => 'required|date',
-        'return_date' => 'required|date',
-        'actual_return_date' => 'nullable|date',
+        'return_date' => 'required|date|after_or_equal:borrow_date',
+        'actual_return_date' => 'nullable|date|after_or_equal:borrow_date',
     ]);
 
     $borrowing = Borrowing::findOrFail($id);
+
+    $bookIsBorrowed = Borrowing::where('book_id', $validated['book_id'])
+        ->whereNull('actual_return_date')
+        ->where('id', '!=', $borrowing->id)
+        ->exists();
+
+    if ($bookIsBorrowed) {
+        return back()->withErrors([
+            'book_id' => 'Buku ini sedang dipinjam pada transaksi aktif lain.',
+        ])->withInput();
+    }
+
     $borrowing->update($validated);
 
     return redirect()->route('borrowings.index');
