@@ -25,12 +25,10 @@
 
     <!-- Quick Stats Cards -->
     @php
-        $totalBorrowings = count($borrowings);
-        $activeBorrowings = $borrowings->whereNull('actual_return_date')->count();
-        $returnedBorrowings = $borrowings->whereNotNull('actual_return_date')->count();
-        $overdueBorrowings = $borrowings->filter(function($b) {
-            return is_null($b->actual_return_date) && \Carbon\Carbon::parse($b->return_date)->isPast();
-        })->count();
+        $totalBorrowings = $borrowings->count();
+        $activeBorrowings = $borrowings->where('is_returned', false)->count();
+        $returnedBorrowings = $borrowings->where('is_returned', true)->count();
+        $overdueBorrowings = $borrowings->where('is_overdue', true)->count();
     @endphp
 
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -124,8 +122,9 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse ($borrowings as $borrowing)
                     @php
-                        $isReturned = !is_null($borrowing->actual_return_date);
-                        $isOverdue = !$isReturned && \Carbon\Carbon::parse($borrowing->return_date)->isPast();
+                        $isReturned = $borrowing->is_returned;
+                        $isOverdue = $borrowing->is_overdue;
+                        $fine = $borrowing->fine;
                     @endphp
                     <tr class="hover:bg-slate-50/60 transition-colors duration-150 border-b border-slate-100 last:border-none borrowing-row">
                         <!-- Peminjam -->
@@ -164,15 +163,25 @@
                         <!-- Status Pengembalian -->
                         <td class="py-4 px-6 whitespace-nowrap">
                             @if ($isReturned)
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-500/10">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    Kembali ({{ \Carbon\Carbon::parse($borrowing->actual_return_date)->format('d M') }})
-                                </span>
+                                <div class="flex flex-col items-start gap-1">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-500/10">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Kembali ({{ \Carbon\Carbon::parse($borrowing->actual_return_date)->format('d M') }})
+                                    </span>
+                                    @if ($fine > 0)
+                                        <span class="text-xs font-semibold text-rose-600">Denda: Rp{{ number_format($fine, 0, ',', '.') }}</span>
+                                    @endif
+                                </div>
                             @elseif ($isOverdue)
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 ring-1 ring-rose-500/10">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                                    Terlambat
-                                </span>
+                                <div class="flex flex-col items-start gap-1">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 ring-1 ring-rose-500/10">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                        Terlambat
+                                    </span>
+                                    @if ($fine > 0)
+                                        <span class="text-xs font-semibold text-rose-600">Denda: Rp{{ number_format($fine, 0, ',', '.') }}</span>
+                                    @endif
+                                </div>
                             @else
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 ring-1 ring-amber-500/10">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>

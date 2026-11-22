@@ -20,6 +20,12 @@ class Borrowing extends Model
         'actual_return_date',
     ];
 
+    protected $casts = [
+        'borrow_date' => 'date',
+        'return_date' => 'date',
+        'actual_return_date' => 'date',
+    ];
+
     // relasi Many to One (belongsTo) ke Borrower
     public function borrower()
     {
@@ -32,21 +38,34 @@ class Borrowing extends Model
         return $this->belongsTo(Book::class);
     }
 
+    public function getIsReturnedAttribute(): bool
+    {
+        return !is_null($this->actual_return_date);
+    }
+
+    public function getIsOverdueAttribute(): bool
+    {
+        if ($this->is_returned) {
+            return false;
+        }
+
+        return \Carbon\Carbon::parse($this->return_date)->endOfDay()->isPast();
+    }
+
     // helper hitung denda (24 jam telat = Rp2.000)
     public function getFineAttribute()
     {
-        if (!$this->actual_return_date) {
+        $returnDate = \Carbon\Carbon::parse($this->return_date)->startOfDay();
+        $comparisonDate = $this->actual_return_date
+            ? \Carbon\Carbon::parse($this->actual_return_date)->startOfDay()
+            : \Carbon\Carbon::today();
+
+        if ($comparisonDate->lessThanOrEqualTo($returnDate)) {
             return 0;
         }
 
-        $returnDate = \Carbon\Carbon::parse($this->return_date);
-        $actualReturnDate = \Carbon\Carbon::parse($this->actual_return_date);
+        $daysLate = $returnDate->diffInDays($comparisonDate);
 
-        if ($actualReturnDate->lessThanOrEqualTo($returnDate)) {
-            return 0;
-        }
-
-        $daysLate = $returnDate->diffInDays($actualReturnDate);
         return $daysLate * 2000;
     }
 }
