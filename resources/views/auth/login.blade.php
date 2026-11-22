@@ -34,7 +34,8 @@
                     <label class="flex cursor-pointer items-center gap-2 text-sm text-slate-400"><input type="checkbox" name="remember" value="1" class="h-4 w-4 rounded border-white/20 bg-black/20 text-cyan-400 focus:ring-cyan-400"> Ingat saya</label>
                     <button type="submit" class="group flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-400/30">Masuk sekarang <span class="transition-transform group-hover:translate-x-1">→</span></button>
                 </form>
-                <a href="{{ route('landing') }}" class="mt-8 block text-center text-sm text-slate-500 transition hover:text-white">Kembali ke halaman utama</a>
+                <div class="mt-8 flex items-center justify-center gap-2 text-sm text-slate-500"><span>Belum punya akun?</span><a href="{{ route('register') }}" class="font-semibold text-cyan-300 transition hover:text-white">Buat akun</a></div>
+                <a href="{{ route('landing') }}" class="mt-3 block text-center text-sm text-slate-500 transition hover:text-white">Kembali ke halaman utama</a>
             </section>
         </div>
     </main>

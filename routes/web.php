@@ -41,6 +41,28 @@ Route::post('/login', function (Request $request) {
     ])->onlyInput('email');
 })->name('login.store');
 
+Route::get('/register', function () {
+    if (Auth::check()) {
+        return redirect()->route('books.index');
+    }
+
+    return view('auth.register');
+})->name('register');
+
+Route::post('/register', function (Request $request) {
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+        'password' => ['required', 'confirmed', 'min:8'],
+    ]);
+
+    $user = App\Models\User::create($validated);
+    Auth::login($user);
+    $request->session()->regenerate();
+
+    return redirect()->route('books.index');
+})->name('register.store');
+
 Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
